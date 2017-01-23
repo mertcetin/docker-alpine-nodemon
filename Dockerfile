@@ -7,11 +7,11 @@ VOLUME /app/src
 
 RUN npm install -g nodemon
 
-ONBUILD ARG PRIVATE_KEY=none
-ONBUILD ARG BUILD_TOOLS="make gcc git g++ openssh-client python"
+ONBUILD ARG SSH_PRIVATE_KEY=none
 ONBUILD COPY package.json yarn.lock* /app/
 
-ONBUILD RUN info(){ printf '\n  ==> %s...\n' "$*"; } && \
+ONBUILD RUN BUILD_TOOLS="make gcc git g++ openssh-client python" && \
+    info(){ printf '\n  ==> %s...\n' "$*"; } && \
     # Enable node-gyp builds
     info 'Installing build tools' && \
     apk add --no-cache $BUILD_TOOLS && \
@@ -19,7 +19,7 @@ ONBUILD RUN info(){ printf '\n  ==> %s...\n' "$*"; } && \
     mkdir -m 700 -p ~/.ssh && \
     # This allows install from all hosts
     echo -e "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && \
-    echo -e $PRIVATE_KEY > ~/.ssh/id_rsa && \
+    echo -e "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && \
     chmod 600 ~/.ssh/id_rsa && \
     info 'Installing node modules' && \
     npm install && \
