@@ -7,27 +7,26 @@ VOLUME /app/src
 
 RUN npm install -g nodemon
 
-ONBUILD ARG SSH_PRIVATE_KEY=none
-ONBUILD COPY package.json yarn.lock* /app/
-
-ONBUILD RUN BUILD_TOOLS="make gcc git g++ openssh-client python" && \
+RUN BUILD_TOOLS="make gcc git g++ openssh-client python" && \
     info(){ printf '\n  ==> %s...\n' "$*"; } && \
     # Enable node-gyp builds
     info 'Installing build tools' && \
     apk add --no-cache $BUILD_TOOLS && \
-    info 'Configuring git & ssh' && \
+    info 'Configuring ssh' && \
     mkdir -m 700 -p ~/.ssh && \
     # This allows install from all hosts
-    echo -e "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && \
-    echo -e "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && \
+    echo -e "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+
+ONBUILD ARG SSH_PRIVATE_KEY="none"
+ONBUILD COPY package.json yarn.lock* /app/
+
+ONBUILD RUN info(){ printf '\n  ==> %s...\n' "$*"; } && \
+    info 'Adding ssh key' && \
+    echo -e "${SSH_PRIVATE_KEY}" > ~/.ssh/id_rsa && \
     chmod 600 ~/.ssh/id_rsa && \
     info 'Installing node modules' && \
     npm install && \
-    mv node_modules node_modules_new && \
-    info 'Cleaning up build tools' && \
-    npm cache clean && \
-    apk del --purge $BUILD_TOOLS && \
-    rm -rf ~/.ssh ~/.node-gyp /tmp/*
+    mv node_modules node_modules_new
 
 ONBUILD COPY . /app/
 
