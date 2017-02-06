@@ -8,6 +8,7 @@ VOLUME /app/src
 RUN npm install -g nodemon
 
 ONBUILD ARG SSH_PRIVATE_KEY=none
+ONBUILD ARG NPM_REGISTRY="https://registry.npmjs.org/"
 ONBUILD COPY package.json yarn.lock* /app/
 
 ONBUILD RUN BUILD_TOOLS="make gcc git g++ openssh-client python" && \
@@ -21,6 +22,8 @@ ONBUILD RUN BUILD_TOOLS="make gcc git g++ openssh-client python" && \
     echo -e "StrictHostKeyChecking no" >> /etc/ssh/ssh_config && \
     echo -e "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa && \
     chmod 600 ~/.ssh/id_rsa && \
+    info 'Setting custom registry' && \
+    npm set registry ${NPM_REGISTRY} && \
     info 'Installing node modules' && \
     npm install && \
     mv node_modules node_modules_new && \
