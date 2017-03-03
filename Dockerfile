@@ -1,4 +1,4 @@
-FROM mhart/alpine-node:6
+FROM mhart/alpine-node:7
 
 MAINTAINER Can Kutlu Kinay <me@ckk.im>
 
